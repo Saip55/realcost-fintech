@@ -1,5 +1,6 @@
 {
   "cleanUrls": true,
+  "outputDirectory": ".output/public",
   "rewrites": [
     {
       "source": "/(.*)",
