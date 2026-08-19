@@ -6,13 +6,30 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const rootDir = path.resolve(__dirname, "..");
-const outputPublicDir = path.join(rootDir, ".output", "public");
-const assetsDir = path.join(outputPublicDir, "assets");
 
-if (!fs.existsSync(assetsDir)) {
-  console.warn("⚠️ Assets directory not found. Skipping static index generation.");
-  process.exit(0);
+const candidateAssetsDirs = [
+  path.join(rootDir, "dist", "client", "assets"),
+  path.join(rootDir, ".output", "public", "assets"),
+  path.join(rootDir, "dist", "assets"),
+];
+
+let assetsDir = null;
+
+for (const cand of candidateAssetsDirs) {
+  if (fs.existsSync(cand)) {
+    assetsDir = cand;
+    break;
+  }
 }
+
+if (!assetsDir) {
+  console.error(
+    "❌ Assets directory not found in dist/client/assets, .output/public/assets, or dist/assets.",
+  );
+  process.exit(1);
+}
+
+console.log(`🔍 Found assets in: ${assetsDir}`);
 
 const files = fs.readdirSync(assetsDir);
 const jsFile = files.find((f) => f.startsWith("index-") && f.endsWith(".js"));
@@ -53,13 +70,20 @@ const htmlContent = `<!doctype html>
 </html>
 `;
 
-fs.writeFileSync(path.join(outputPublicDir, "index.html"), htmlContent, "utf-8");
-console.log(`✅ Generated static index.html in .output/public/ with JS: ${jsFile} and CSS: ${cssFile}`);
+const publishDirs = [
+  path.join(rootDir, "dist"),
+  path.join(rootDir, "dist", "client"),
+  path.join(rootDir, ".output", "public"),
+];
 
-const distDir = path.join(rootDir, "dist");
-if (!fs.existsSync(distDir)) {
-  fs.mkdirSync(distDir, { recursive: true });
+for (const pDir of publishDirs) {
+  if (!fs.existsSync(pDir)) {
+    fs.mkdirSync(pDir, { recursive: true });
+  }
+  fs.writeFileSync(path.join(pDir, "index.html"), htmlContent, "utf-8");
+  const pAssets = path.join(pDir, "assets");
+  if (pAssets !== assetsDir) {
+    fs.cpSync(assetsDir, pAssets, { recursive: true });
+  }
+  console.log(`✅ Generated index.html and synced assets to: ${pDir}`);
 }
-fs.writeFileSync(path.join(distDir, "index.html"), htmlContent, "utf-8");
-fs.cpSync(assetsDir, path.join(distDir, "assets"), { recursive: true });
-console.log(`✅ Copied static index.html and assets to dist/ directory for universal platform support.`);
