@@ -16,12 +16,1963 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
       rel="stylesheet"
     />
+    <style>
+      :root {
+        --rc-bg-glow: #e6f9d5;
+        --rc-bg-outer: #d4f5b2;
+        --rc-lime: #b8f566;
+        --rc-lime-dark: #a2e84d;
+        --rc-accent: #83db28;
+        --rc-ink: #121910;
+        --rc-muted: #5e6d56;
+        --rc-glass: rgba(255, 255, 255, 0.78);
+        --rc-glass-card: rgba(255, 255, 255, 0.88);
+        --rc-border: rgba(255, 255, 255, 0.85);
+        --rc-danger: #e8503f;
+        --rc-invest: #2f6fed;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body {
+        font-family:
+          "Inter",
+          "Plus Jakarta Sans",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        background-color: #f7fdf3;
+        color: var(--rc-ink);
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      /* Ambient Glows */
+      .ambient-glow-top {
+        position: absolute;
+        width: 700px;
+        height: 700px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(184, 245, 102, 0.45) 0%,
+          rgba(255, 255, 255, 0) 70%
+        );
+        top: -250px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 0;
+        pointer-events: none;
+        filter: blur(40px);
+      }
+
+      .ambient-glow-bottom {
+        position: absolute;
+        width: 800px;
+        height: 600px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(162, 232, 77, 0.35) 0%,
+          rgba(255, 255, 255, 0) 70%
+        );
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 0;
+        pointer-events: none;
+        filter: blur(60px);
+      }
+
+      .canvas-frame {
+        width: 100%;
+        max-width: 1200px;
+        position: relative;
+        z-index: 1;
+        padding: 0 20px 60px;
+      }
+
+      /* Header & Nav */
+      header {
+        position: sticky;
+        top: 20px;
+        z-index: 100;
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-top: 16px;
+      }
+
+      .nav-pill {
+        background: var(--rc-glass);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--rc-border);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 8px 12px 8px 24px;
+      }
+
+      .brand-logo {
+        font-weight: 800;
+        font-size: 18px;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--rc-ink);
+        text-decoration: none;
+      }
+
+      .brand-logo svg {
+        width: 20px;
+        height: 20px;
+        fill: var(--rc-ink);
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        gap: 8px;
+      }
+
+      .nav-links a {
+        text-decoration: none;
+        color: var(--rc-muted);
+        font-size: 14px;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        transition: all 0.2s;
+      }
+
+      .nav-links a:hover,
+      .nav-links a.active {
+        color: var(--rc-ink);
+        background: rgba(184, 245, 102, 0.4);
+      }
+
+      .btn-settings {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--rc-ink);
+        transition: background 0.2s;
+      }
+
+      .btn-settings:hover {
+        background: rgba(0, 0, 0, 0.06);
+      }
+
+      /* Buttons */
+      .btn-card {
+        background: var(--rc-lime);
+        color: var(--rc-ink);
+        font-weight: 700;
+        font-size: 14px;
+        border-radius: 9999px;
+        padding: 10px 22px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 14px rgba(171, 243, 77, 0.4);
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s,
+          background 0.2s;
+        cursor: pointer;
+      }
+
+      .btn-card:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 6px 20px rgba(171, 243, 77, 0.6);
+        background: var(--rc-lime-dark);
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--rc-ink);
+        font-weight: 600;
+        font-size: 14px;
+        border-radius: 9999px;
+        padding: 10px 20px;
+        border: 1px solid #dff5cf;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-secondary:hover {
+        background: #e6f9d5;
+      }
+
+      .btn-danger {
+        background: var(--rc-danger);
+        color: white;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        border: none;
+        cursor: pointer;
+      }
+
+      /* Input */
+      .input-glass {
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid #dff5cf;
+        border-radius: 12px;
+        padding: 10px 14px;
+        color: var(--rc-ink);
+        font-size: 14px;
+        width: 100%;
+        outline: none;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+
+      .input-glass:focus {
+        border-color: var(--rc-accent);
+        box-shadow: 0 0 0 3px rgba(131, 219, 40, 0.2);
+      }
+
+      /* Badge Pill */
+      .badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid #dff5cf;
+        padding: 6px 16px;
+        border-radius: 9999px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--rc-muted);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        margin-bottom: 20px;
+      }
+
+      .cost-delta-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(232, 80, 63, 0.12);
+        border: 1px solid rgba(232, 80, 63, 0.35);
+        padding: 2px 8px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--rc-danger);
+        font-family: monospace;
+        vertical-align: middle;
+      }
+
+      /* Hero Section */
+      .hero {
+        position: relative;
+        z-index: 10;
+        text-align: center;
+        padding: 40px 20px 30px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      .hero-title {
+        font-size: 52px;
+        line-height: 1.12;
+        font-weight: 800;
+        letter-spacing: -1.5px;
+        color: var(--rc-ink);
+        margin-bottom: 16px;
+      }
+
+      .hero-subtitle {
+        font-size: 17px;
+        color: var(--rc-muted);
+        line-height: 1.5;
+        max-width: 620px;
+        margin: 0 auto 28px;
+      }
+
+      /* Fintech Card */
+      .fintech-card {
+        width: 100%;
+        max-width: 500px;
+        height: 300px;
+        background: linear-gradient(135deg, #aef75a 0%, #8ae032 60%, #76cd22 100%);
+        border-radius: 28px;
+        box-shadow:
+          0 35px 70px rgba(89, 179, 21, 0.28),
+          inset 0 1px 2px rgba(255, 255, 255, 0.6);
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        z-index: 5;
+        transform-style: preserve-3d;
+        animation: cardFloat 6s ease-in-out infinite alternate;
+        cursor: pointer;
+        margin: 20px auto;
+        text-align: left;
+        transition: transform 0.3s;
+      }
+
+      .fintech-card:hover {
+        animation-play-state: paused;
+        transform: translateY(-8px) scale(1.02);
+      }
+
+      @keyframes cardFloat {
+        0% {
+          transform: translateY(0px) rotateX(4deg) rotateY(-6deg) rotateZ(1deg);
+        }
+        100% {
+          transform: translateY(-16px) rotateX(-3deg) rotateY(6deg) rotateZ(-1.5deg);
+        }
+      }
+
+      .card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .card-brand {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--rc-ink);
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .card-chip {
+        width: 48px;
+        height: 38px;
+        background: rgba(255, 255, 255, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 8px;
+        backdrop-filter: blur(4px);
+      }
+
+      .card-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+      }
+
+      .card-stats {
+        display: flex;
+        gap: 20px;
+      }
+
+      .card-stat {
+        text-align: right;
+      }
+
+      .card-stat-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--rc-muted);
+        margin-bottom: 2px;
+        font-weight: 600;
+      }
+
+      .card-stat-value {
+        font-family: monospace;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--rc-ink);
+      }
+
+      /* Features Grid */
+      .features-section {
+        padding: 50px 20px 30px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        max-width: 1160px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 10;
+      }
+
+      .feature-item {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .feature-icon-box {
+        width: 68px;
+        height: 68px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--rc-glass);
+        border: 1px solid var(--rc-border);
+        border-radius: 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+        transition: transform 0.3s;
+        font-size: 28px;
+      }
+
+      .feature-item:hover .feature-icon-box {
+        transform: scale(1.12) rotate(4deg);
+      }
+
+      .feature-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--rc-ink);
+        margin-bottom: 6px;
+      }
+
+      .feature-desc {
+        font-size: 13.5px;
+        color: var(--rc-muted);
+        line-height: 1.45;
+      }
+
+      /* Glass Panels */
+      .glass-panel {
+        background: var(--rc-glass-card);
+        border: 1px solid var(--rc-border);
+        border-radius: 24px;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+        padding: 36px;
+        margin: 30px 0;
+        position: relative;
+        z-index: 10;
+      }
+
+      /* What-If Simulator */
+      .spiral-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        gap: 40px;
+      }
+
+      .visual-dial {
+        width: 250px;
+        height: 250px;
+        background: conic-gradient(
+          from 0deg,
+          var(--rc-lime),
+          var(--rc-lime-dark),
+          var(--rc-accent),
+          var(--rc-lime)
+        );
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto;
+        box-shadow: 0 20px 40px rgba(131, 219, 40, 0.25);
+      }
+
+      .visual-dial-inner {
+        width: 190px;
+        height: 190px;
+        background: #ffffff;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.06);
+      }
+
+      .visual-dial .number {
+        font-size: 36px;
+        font-weight: 800;
+        color: var(--rc-ink);
+        font-family: monospace;
+      }
+
+      .visual-dial .unit {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--rc-muted);
+        margin-top: 4px;
+      }
+
+      /* Slider */
+      .rc-slider {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 8px;
+        border-radius: 4px;
+        background: #e2edd8;
+        outline: none;
+        margin: 16px 0;
+      }
+
+      .rc-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--rc-accent);
+        border: 2px solid #ffffff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+        cursor: pointer;
+        transition: transform 0.15s;
+      }
+
+      .rc-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.25);
+      }
+
+      /* Floating Ornaments */
+      .ornament {
+        position: absolute;
+        font-size: 26px;
+        animation: ornamentBob 4s ease-in-out infinite alternate;
+        filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.12));
+        user-select: none;
+      }
+
+      @keyframes ornamentBob {
+        0% {
+          transform: translateY(0px) rotate(0deg);
+        }
+        100% {
+          transform: translateY(-18px) rotate(8deg);
+        }
+      }
+
+      /* Transaction Row */
+      .transaction-row {
+        background: var(--rc-glass);
+        border: 1px solid var(--rc-border);
+        border-radius: 16px;
+        padding: 16px 20px;
+        backdrop-filter: blur(8px);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        cursor: pointer;
+        transition:
+          transform 0.2s,
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+
+      .transaction-row:hover {
+        transform: translateY(-2px);
+        border-color: var(--rc-accent);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+      }
+
+      /* Modal */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(4px);
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      .modal-box {
+        background: #ffffff;
+        border: 1px solid #dff5cf;
+        border-radius: 24px;
+        padding: 28px;
+        max-width: 480px;
+        width: 100%;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        position: relative;
+      }
+
+      /* Responsive */
+      @media (max-width: 900px) {
+        .features-section {
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+        }
+        .spiral-section {
+          grid-template-columns: 1fr;
+          text-align: center;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .hero-title {
+          font-size: 34px;
+        }
+        .features-section {
+          grid-template-columns: 1fr;
+        }
+        .nav-links {
+          display: none;
+        }
+        .fintech-card {
+          height: 260px;
+          padding: 22px;
+        }
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <div class="ambient-glow-top"></div>
+    <div class="ambient-glow-bottom"></div>
+
+    <div class="canvas-frame">
+      <!-- Header -->
+      <header>
+        <nav class="nav-pill">
+          <a href="#" class="brand-logo">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+            <span>RealCost</span>
+          </a>
+          <ul class="nav-links">
+            <li><a href="#dashboard" class="active">Dashboard</a></li>
+            <li><a href="#insights">Insights</a></li>
+            <li><a href="#what-if">What-If</a></li>
+          </ul>
+          <div style="display: flex; align-items: center; gap: 8px">
+            <button
+              id="btn-auth-status"
+              onclick="openAuthModal()"
+              class="btn-secondary"
+              style="
+                padding: 6px 14px;
+                font-size: 12px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-weight: 700;
+              "
+            >
+              <span
+                id="auth-status-dot"
+                style="
+                  width: 8px;
+                  height: 8px;
+                  border-radius: 50%;
+                  background: #a2e84d;
+                  display: inline-block;
+                "
+              ></span>
+              <span id="auth-status-text">Guest Mode</span>
+            </button>
+            <button class="btn-settings" onclick="openSettingsModal()" title="Settings">
+              <svg
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </button>
+          </div>
+        </nav>
+      </header>
+
+      <!-- Hero Section -->
+      <section class="hero" id="onboarding">
+        <div class="badge-pill">
+          <svg width="14" height="14" fill="#83db28" viewBox="0 0 24 24">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
+            ></path>
+          </svg>
+          <span>Get started in 10 seconds</span>
+        </div>
+        <h1 class="hero-title">Discover Your Real Cost</h1>
+        <p class="hero-subtitle">
+          Every purchase has a hidden cost in hours of work and future wealth lost. Connect your
+          spending habits and see the true compounding impact.
+        </p>
+
+        <div
+          style="
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+          "
+        >
+          <a href="#dashboard" class="btn-card">Explore Dashboard</a>
+          <button onclick="resetDemoData()" class="btn-secondary">Reload Demo Data</button>
+          <button onclick="openSettingsModal()" class="btn-secondary">
+            ⚙️ Settings (<span id="btn-wage-indicator">₹500/hr</span>)
+          </button>
+        </div>
+
+        <!-- 3D Floating Fintech Card -->
+        <div
+          class="fintech-card"
+          onclick="openSettingsModal()"
+          title="Click to customize hourly wage & settings"
+        >
+          <div class="card-top">
+            <div class="card-brand">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#121910">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+              </svg>
+              RealCost
+            </div>
+            <div class="card-chip"></div>
+          </div>
+
+          <div>
+            <div
+              style="
+                font-size: 11px;
+                text-transform: uppercase;
+                font-weight: 700;
+                letter-spacing: 1px;
+                color: #355320;
+              "
+            >
+              Baseline Hourly Rate
+            </div>
+            <div
+              style="font-family: monospace; font-size: 32px; font-weight: 800; color: #121910"
+              id="card-rate-display"
+            >
+              ₹500
+              <span style="font-size: 14px; font-family: sans-serif; font-weight: normal"
+                >/ hour</span
+              >
+            </div>
+          </div>
+
+          <div class="card-bottom">
+            <div>
+              <div class="card-stat">
+                <div class="card-stat-label">20y 1hr Value</div>
+                <div class="card-stat-value" id="card-future-val">₹1,935</div>
+              </div>
+            </div>
+            <div class="card-stats">
+              <div class="card-stat">
+                <div class="card-stat-label">Return Rate</div>
+                <div class="card-stat-value" id="card-return-rate">7%</div>
+              </div>
+              <div class="card-stat">
+                <div class="card-stat-label">Horizon</div>
+                <div class="card-stat-value" id="card-horizon">20y</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4 Features Pillars -->
+      <section class="features-section">
+        <div class="feature-item">
+          <div class="feature-icon-box">⏱️</div>
+          <h3 class="feature-title">Time-Cost Engine</h3>
+          <p class="feature-desc">Converts every rupee into exact hours of life spent working.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-box">📈</div>
+          <h3 class="feature-title">Opportunity Loss</h3>
+          <p class="feature-desc">
+            Calculates 20-year compound growth if invested at expected return.
+          </p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-box">💥</div>
+          <h3 class="feature-title">Subscription Shock</h3>
+          <p class="feature-desc">Visualizes the lifetime compound drain of recurring fees.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-box">🔮</div>
+          <h3 class="feature-title">What-If Simulator</h3>
+          <p class="feature-desc">Simulate cutting small daily habits to see wealth created.</p>
+        </div>
+      </section>
+
+      <!-- Dashboard Section -->
+      <section class="glass-panel" id="dashboard">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+          "
+        >
+          <div>
+            <div class="badge-pill" style="margin-bottom: 6px">Expense Tracker</div>
+            <h2 style="font-size: 28px; font-weight: 800; letter-spacing: -0.5px">
+              Active Dashboard
+            </h2>
+          </div>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap">
+            <div
+              style="
+                background: white;
+                padding: 8px 16px;
+                border-radius: 14px;
+                border: 1px solid #dff5cf;
+              "
+            >
+              <div
+                style="
+                  font-size: 11px;
+                  text-transform: uppercase;
+                  color: var(--rc-muted);
+                  font-weight: 700;
+                "
+              >
+                Total Spent
+              </div>
+              <div
+                style="font-size: 18px; font-weight: 800; font-family: monospace"
+                id="summary-total-spent"
+              >
+                ₹0
+              </div>
+            </div>
+            <div
+              style="
+                background: white;
+                padding: 8px 16px;
+                border-radius: 14px;
+                border: 1px solid #dff5cf;
+              "
+            >
+              <div
+                style="
+                  font-size: 11px;
+                  text-transform: uppercase;
+                  color: var(--rc-muted);
+                  font-weight: 700;
+                "
+              >
+                Life Hours
+              </div>
+              <div
+                style="font-size: 18px; font-weight: 800; font-family: monospace"
+                id="summary-total-hours"
+              >
+                0 hrs
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Transaction Form -->
+        <div
+          style="
+            background: white;
+            padding: 20px;
+            border-radius: 18px;
+            border: 1px solid #dff5cf;
+            margin-bottom: 24px;
+          "
+        >
+          <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px">➕ Add Expense</h3>
+          <form
+            id="add-transaction-form"
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+              gap: 12px;
+              align-items: end;
+            "
+          >
+            <div>
+              <label
+                style="
+                  display: block;
+                  font-size: 12px;
+                  font-weight: 700;
+                  color: var(--rc-muted);
+                  margin-bottom: 4px;
+                "
+                >Description</label
+              >
+              <input
+                type="text"
+                id="tx-description"
+                class="input-glass"
+                placeholder="e.g. Coffee, Netflix"
+                required
+              />
+            </div>
+            <div>
+              <label
+                style="
+                  display: block;
+                  font-size: 12px;
+                  font-weight: 700;
+                  color: var(--rc-muted);
+                  margin-bottom: 4px;
+                "
+                >Amount (₹)</label
+              >
+              <input
+                type="number"
+                id="tx-amount"
+                class="input-glass"
+                placeholder="e.g. 500"
+                required
+              />
+            </div>
+            <div>
+              <label
+                style="
+                  display: block;
+                  font-size: 12px;
+                  font-weight: 700;
+                  color: var(--rc-muted);
+                  margin-bottom: 4px;
+                "
+                >Category</label
+              >
+              <select id="tx-category" class="input-glass">
+                <option value="Food">Food</option>
+                <option value="Subscriptions">Subscriptions</option>
+                <option value="Transport">Transport</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Health">Health</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                  font-size: 12px;
+                  font-weight: 700;
+                  cursor: pointer;
+                  padding: 10px 0;
+                "
+              >
+                <input
+                  type="checkbox"
+                  id="tx-recurring"
+                  style="accent-color: var(--rc-accent); width: 16px; height: 16px"
+                />
+                Monthly Sub?
+              </label>
+            </div>
+            <button type="submit" class="btn-card" style="height: 42px">Add Item</button>
+          </form>
+        </div>
+
+        <!-- Transaction Feed -->
+        <div id="transaction-list"></div>
+
+        <!-- Subscription Shock Card -->
+        <div
+          id="shock-card"
+          style="
+            background: #fff7f7;
+            border: 2px solid rgba(232, 80, 63, 0.25);
+            border-radius: 20px;
+            padding: 28px;
+            margin-top: 30px;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            display: none;
+          "
+        >
+          <div id="ornaments-box" style="position: absolute; inset: 0; pointer-events: none"></div>
+          <div style="position: relative; z-index: 2">
+            <div class="cost-delta-badge" style="margin-bottom: 8px">
+              💥 Subscription Shock Index
+            </div>
+            <div style="font-size: 18px; font-weight: 800; color: var(--rc-ink)">
+              Recurring 20-Year Compounding Drain
+            </div>
+            <div
+              id="shock-value"
+              style="
+                font-size: 40px;
+                font-weight: 900;
+                color: var(--rc-danger);
+                font-family: monospace;
+                margin: 8px 0;
+              "
+            >
+              ₹0
+            </div>
+            <div
+              id="shock-subtext"
+              style="font-size: 13.5px; color: var(--rc-muted); max-width: 500px; margin: 0 auto"
+            ></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- What-If Simulator -->
+      <section class="glass-panel spiral-section" id="what-if">
+        <div class="visual-dial">
+          <div class="visual-dial-inner">
+            <span
+              style="
+                font-size: 11px;
+                text-transform: uppercase;
+                font-weight: 700;
+                color: var(--rc-muted);
+              "
+              >Cut / Month</span
+            >
+            <div class="number" id="dial-number">₹500</div>
+            <div class="unit" id="dial-future-preview">➔ ₹2.6L</div>
+          </div>
+        </div>
+        <div>
+          <div class="badge-pill">Wealth Multiplier</div>
+          <h2 style="font-size: 30px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px">
+            Cut Spending, Grow Wealth
+          </h2>
+          <p
+            id="slider-subtitle"
+            style="font-size: 14px; color: var(--rc-muted); line-height: 1.5; margin-bottom: 20px"
+          ></p>
+
+          <div
+            style="
+              background: white;
+              padding: 16px;
+              border-radius: 14px;
+              border: 1px solid #dff5cf;
+              margin-bottom: 16px;
+            "
+          >
+            <div
+              style="
+                font-size: 11px;
+                text-transform: uppercase;
+                font-weight: 700;
+                color: var(--rc-muted);
+              "
+            >
+              20-Year Compounded Wealth
+            </div>
+            <div
+              style="
+                font-size: 32px;
+                font-weight: 900;
+                font-family: monospace;
+                color: var(--rc-ink);
+              "
+              id="future-value-display"
+            >
+              ₹2.6 Lakh
+            </div>
+          </div>
+
+          <input
+            type="range"
+            min="0"
+            max="5000"
+            step="50"
+            value="500"
+            class="rc-slider"
+            id="spending-slider"
+          />
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              font-size: 12px;
+              font-family: monospace;
+              color: var(--rc-muted);
+            "
+          >
+            <span>₹0/mo</span>
+            <span>₹2,500/mo</span>
+            <span>₹5,000/mo</span>
+          </div>
+
+          <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap">
+            <button
+              onclick="setSliderCut(200)"
+              class="btn-secondary"
+              style="padding: 6px 12px; font-size: 12px"
+            >
+              ₹200
+            </button>
+            <button
+              onclick="setSliderCut(500)"
+              class="btn-secondary"
+              style="padding: 6px 12px; font-size: 12px"
+            >
+              ₹500
+            </button>
+            <button
+              onclick="setSliderCut(1000)"
+              class="btn-secondary"
+              style="padding: 6px 12px; font-size: 12px"
+            >
+              ₹1,000
+            </button>
+            <button
+              onclick="setSliderCut(2500)"
+              class="btn-secondary"
+              style="padding: 6px 12px; font-size: 12px"
+            >
+              ₹2,500
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Insights Panel -->
+      <section class="glass-panel" id="insights">
+        <div class="badge-pill">Spending Breakdown</div>
+        <h2 style="font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 20px">
+          Category & Life Hours Insights
+        </h2>
+        <div
+          id="category-grid"
+          style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+          "
+        ></div>
+      </section>
+    </div>
+
+    <!-- Settings Modal -->
+    <div
+      id="settings-modal"
+      class="modal-overlay"
+      style="display: none"
+      onclick="closeSettingsModal()"
+    >
+      <div class="modal-box" onclick="event.stopPropagation()">
+        <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 6px">⚙️ Financial Settings</h3>
+        <p style="font-size: 13px; color: var(--rc-muted); margin-bottom: 18px">
+          Customize your hourly wage and compounding assumptions.
+        </p>
+
+        <div style="margin-bottom: 14px">
+          <label
+            style="
+              display: block;
+              font-size: 12px;
+              font-weight: 700;
+              color: var(--rc-muted);
+              margin-bottom: 4px;
+            "
+            >Hourly Wage (₹/hr)</label
+          >
+          <input type="number" id="setting-wage" class="input-glass" value="500" />
+        </div>
+
+        <div style="margin-bottom: 14px">
+          <label
+            style="
+              display: block;
+              font-size: 12px;
+              font-weight: 700;
+              color: var(--rc-muted);
+              margin-bottom: 4px;
+            "
+            >Expected Return (%)</label
+          >
+          <input type="number" id="setting-return" class="input-glass" value="7" />
+        </div>
+
+        <div style="margin-bottom: 20px">
+          <label
+            style="
+              display: block;
+              font-size: 12px;
+              font-weight: 700;
+              color: var(--rc-muted);
+              margin-bottom: 4px;
+            "
+            >Horizon (Years)</label
+          >
+          <input type="number" id="setting-horizon" class="input-glass" value="20" />
+        </div>
+
+        <div style="display: flex; gap: 10px">
+          <button onclick="saveSettings()" class="btn-card" style="flex: 1">Save Settings</button>
+          <button onclick="closeSettingsModal()" class="btn-secondary" style="flex: 1">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Supabase Auth / Cloud Sync Modal -->
+    <div id="auth-modal" class="modal-overlay" style="display: none" onclick="closeAuthModal()">
+      <div class="modal-box" onclick="event.stopPropagation()">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+          "
+        >
+          <h3 style="font-size: 20px; font-weight: 800" id="auth-modal-title">
+            ☁️ Supabase Cloud Sync
+          </h3>
+          <button
+            onclick="closeAuthModal()"
+            style="
+              background: none;
+              border: none;
+              font-size: 16px;
+              cursor: pointer;
+              color: var(--rc-muted);
+            "
+          >
+            ✕
+          </button>
+        </div>
+        <p
+          style="font-size: 13px; color: var(--rc-muted); margin-bottom: 18px"
+          id="auth-modal-desc"
+        >
+          Sign in or register to synchronize your expenses and financial settings securely across
+          devices.
+        </p>
+
+        <!-- If logged in view -->
+        <div id="auth-logged-in-view" style="display: none">
+          <div
+            style="
+              background: #f7fdf3;
+              padding: 16px;
+              border-radius: 14px;
+              border: 1px solid #dff5cf;
+              margin-bottom: 18px;
+            "
+          >
+            <div
+              style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #355320"
+            >
+              Connected User
+            </div>
+            <div
+              style="font-size: 15px; font-weight: 800; color: var(--rc-ink)"
+              id="auth-user-email"
+            >
+              user@example.com
+            </div>
+            <div
+              style="font-size: 12px; color: var(--rc-accent); margin-top: 4px; font-weight: 600"
+            >
+              ● Cloud Database Sync Active
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px">
+            <button onclick="syncWithSupabase()" class="btn-card" style="flex: 1">Sync Now</button>
+            <button onclick="handleSignOut()" class="btn-danger" style="flex: 1; padding: 10px">
+              Log Out
+            </button>
+          </div>
+        </div>
+
+        <!-- If logged out view -->
+        <div id="auth-logged-out-view">
+          <div
+            style="
+              display: flex;
+              gap: 8px;
+              margin-bottom: 16px;
+              border-bottom: 1px solid #eef5e7;
+              padding-bottom: 10px;
+            "
+          >
+            <button
+              id="tab-login-btn"
+              onclick="setAuthMode('login')"
+              class="btn-secondary"
+              style="flex: 1; font-weight: 700; background: #e6f9d5"
+            >
+              Sign In
+            </button>
+            <button
+              id="tab-signup-btn"
+              onclick="setAuthMode('signup')"
+              class="btn-secondary"
+              style="flex: 1; font-weight: 700"
+            >
+              Sign Up
+            </button>
+          </div>
+
+          <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+            <div style="margin-bottom: 12px">
+              <label
+                style="
+                  display: block;
+                  font-size: 12px;
+                  font-weight: 700;
+                  color: var(--rc-muted);
+                  margin-bottom: 4px;
+                "
+                >Email Address</label
+              >
+              <input
+                type="email"
+                id="auth-email"
+                class="input-glass"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            <div style="margin-bottom: 18px">
+              <label
+                style="
+                  display: block;
+                  font-size: 12px;
+                  font-weight: 700;
+                  color: var(--rc-muted);
+                  margin-bottom: 4px;
+                "
+                >Password</label
+              >
+              <input
+                type="password"
+                id="auth-password"
+                class="input-glass"
+                placeholder="••••••••"
+                required
+                minlength="6"
+              />
+            </div>
+            <div
+              id="auth-error-msg"
+              style="
+                color: var(--rc-danger);
+                font-size: 12px;
+                font-weight: 600;
+                margin-bottom: 12px;
+                display: none;
+              "
+            ></div>
+            <div style="display: flex; gap: 10px">
+              <button type="submit" id="auth-submit-btn" class="btn-card" style="flex: 1">
+                Sign In
+              </button>
+              <button
+                type="button"
+                onclick="closeAuthModal()"
+                class="btn-secondary"
+                style="flex: 1"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Supabase Configuration
+      const SUPABASE_URL = "https://xaodfrzsmskogmjmikrr.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_2g8RNi5pSuM3TYzkKoSrbw_lvX2B5Is";
+
+      let supabaseClient = null;
+      let currentUser = null;
+      let authMode = "login";
+
+      if (window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+
+      // State
+      let hourlyRate = 500;
+      let expectedReturn = 7;
+      let projectionYears = 20;
+
+      let transactions = [];
+
+      // Load from LocalStorage
+      try {
+        const savedSettings = localStorage.getItem("rc_settings");
+        if (savedSettings) {
+          const parsed = JSON.parse(savedSettings);
+          hourlyRate = parsed.hourlyRate || 500;
+          expectedReturn = parsed.expectedReturn || 7;
+          projectionYears = parsed.projectionYears || 20;
+        }
+        const savedTx = localStorage.getItem("rc_transactions");
+        if (savedTx) {
+          transactions = JSON.parse(savedTx);
+        }
+      } catch (e) {}
+
+      // Calculation Math
+      const calcHours = (amt) => Math.round((amt / (hourlyRate || 1)) * 100) / 100;
+      const calcFuture = (amt) =>
+        Math.round(amt * Math.pow(1 + expectedReturn / 100, projectionYears));
+      const calcLifetime = (monthlyAmt) => {
+        const r = expectedReturn / 100 / 12;
+        const m = projectionYears * 12;
+        if (r === 0) return monthlyAmt * m;
+        return Math.round(monthlyAmt * ((Math.pow(1 + r, m) - 1) / r));
+      };
+
+      const formatCurrency = (amt) => `₹${Math.round(amt).toLocaleString("en-IN")}`;
+      const formatHours = (h) => (h < 1 ? `${Math.round(h * 60)} min` : `${h.toFixed(1)} hrs`);
+
+      // Render Functions
+      function renderAll() {
+        // Update Card
+        document.getElementById("card-rate-display").innerHTML =
+          `${formatCurrency(hourlyRate)} <span style="font-size: 14px; font-family: sans-serif; font-weight: normal;">/ hour</span>`;
+        document.getElementById("btn-wage-indicator").innerText = `₹${hourlyRate}/hr`;
+        document.getElementById("card-future-val").innerText = formatCurrency(
+          calcFuture(hourlyRate),
+        );
+        document.getElementById("card-return-rate").innerText = `${expectedReturn}%`;
+        document.getElementById("card-horizon").innerText = `${projectionYears}y`;
+
+        // Render List
+        const list = document.getElementById("transaction-list");
+        list.innerHTML = "";
+        let totalSpend = 0;
+        let totalHours = 0;
+
+        if (transactions.length === 0) {
+          list.innerHTML = `
+                <div style="text-align: center; padding: 36px 20px; background: rgba(255,255,255,0.7); border-radius: 18px; border: 1px dashed #dff5cf;">
+                    <p style="font-size: 14px; font-weight: 700; color: var(--rc-ink); margin-bottom: 4px;">No expenses recorded yet</p>
+                    <p style="font-size: 12px; color: var(--rc-muted); margin-bottom: 12px;">Add your first expense above or load sample demo data.</p>
+                    <button onclick="resetDemoData()" class="btn-card" style="font-size: 12px; padding: 6px 16px;">Load Demo Data</button>
+                </div>
+            `;
+        } else {
+          transactions.forEach((tx) => {
+            totalSpend += tx.amount;
+            const h = calcHours(tx.amount);
+            totalHours += h;
+            const fv = calcFuture(tx.amount);
+
+            const row = document.createElement("div");
+            row.className = "transaction-row";
+            row.innerHTML = `
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; font-size: 15px;">${tx.description} ${tx.isRecurring ? '<span class="cost-delta-badge">🔁 Recurring</span>' : ""}</div>
+                        <div style="font-size: 12px; color: var(--rc-muted);">${tx.category}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-family: monospace; font-weight: 800; font-size: 16px;">${formatCurrency(tx.amount)}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 12px; font-family: monospace; background: rgba(0,0,0,0.05); padding: 4px 8px; border-radius: 6px;">⏳ ${formatHours(h)}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 12px; font-family: monospace; color: var(--rc-invest); background: #eef4ff; padding: 4px 8px; border-radius: 6px;">📈 ${formatCurrency(fv)}</div>
+                    </div>
+                    <button onclick="deleteTransaction('${tx.id}')" style="background: none; border: none; cursor: pointer; font-size: 16px; padding: 4px;" title="Delete">🗑️</button>
+                `;
+            list.appendChild(row);
+          });
+        }
+
+        document.getElementById("summary-total-spent").innerText = formatCurrency(totalSpend);
+        document.getElementById("summary-total-hours").innerText = formatHours(totalHours);
+
+        // Subscription Shock
+        const recurring = transactions.filter((t) => t.isRecurring);
+        const shockCard = document.getElementById("shock-card");
+        if (recurring.length > 0) {
+          const monthlyTotal = recurring.reduce((s, t) => s + t.amount, 0);
+          const lifetime = calcLifetime(monthlyTotal);
+          shockCard.style.display = "block";
+          document.getElementById("shock-value").innerText =
+            lifetime >= 100000
+              ? `₹${(lifetime / 100000).toFixed(1)} Lakh`
+              : formatCurrency(lifetime);
+          document.getElementById("shock-subtext").innerText =
+            `You spend ${formatCurrency(monthlyTotal)}/month across ${recurring.length} recurring subscriptions (${recurring.map((r) => r.description).join(", ")}).`;
+
+          // Ornaments
+          const ob = document.getElementById("ornaments-box");
+          ob.innerHTML = "";
+          ["💰", "💸", "₹", "💥"].forEach((emoji, i) => {
+            const el = document.createElement("div");
+            el.className = "ornament";
+            el.innerText = emoji;
+            el.style.left = `${15 + i * 24}%`;
+            el.style.top = "10%";
+            el.style.animationDelay = `${i * 0.7}s`;
+            ob.appendChild(el);
+          });
+        } else {
+          shockCard.style.display = "none";
+        }
+
+        renderWhatIf();
+        renderInsights();
+
+        // Save
+        try {
+          localStorage.setItem(
+            "rc_settings",
+            JSON.stringify({ hourlyRate, expectedReturn, projectionYears }),
+          );
+          localStorage.setItem("rc_transactions", JSON.stringify(transactions));
+        } catch (e) {}
+      }
+
+      function renderWhatIf() {
+        const slider = document.getElementById("spending-slider");
+        const cut = parseInt(slider.value) || 0;
+        const totalMonths = projectionYears * 12;
+        const r = expectedReturn / 100 / 12;
+        const futureCompound =
+          r === 0 ? cut * totalMonths : Math.round(cut * ((Math.pow(1 + r, totalMonths) - 1) / r));
+
+        const formatted =
+          futureCompound >= 100000
+            ? `₹${(futureCompound / 100000).toFixed(1)} Lakh`
+            : formatCurrency(futureCompound);
+        document.getElementById("dial-number").innerText = `₹${cut}`;
+        document.getElementById("dial-future-preview").innerText = `➔ ${formatted}`;
+        document.getElementById("future-value-display").innerText = formatted;
+        document.getElementById("slider-subtitle").innerText =
+          `If you cut ₹${cut}/month and invest it for ${projectionYears} years at ${expectedReturn}% return, you save ₹${(cut * totalMonths).toLocaleString("en-IN")} and gain ₹${Math.max(0, futureCompound - cut * totalMonths).toLocaleString("en-IN")} in interest!`;
+      }
+
+      function renderInsights() {
+        const grid = document.getElementById("category-grid");
+        grid.innerHTML = "";
+        const cats = {};
+        transactions.forEach((t) => {
+          if (!cats[t.category]) cats[t.category] = { amt: 0, count: 0 };
+          cats[t.category].amt += t.amount;
+          cats[t.category].count += 1;
+        });
+
+        if (Object.keys(cats).length === 0) {
+          grid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 30px; background: white; border-radius: 16px; border: 1px dashed #dff5cf;">
+                    <p style="font-size: 13px; color: var(--rc-muted);">Add expenses in the Dashboard to generate category distribution and life-hours insights.</p>
+                </div>
+            `;
+          return;
+        }
+
+        Object.entries(cats).forEach(([cat, d]) => {
+          const card = document.createElement("div");
+          card.style.background = "white";
+          card.style.padding = "18px";
+          card.style.borderRadius = "16px";
+          card.style.border = "1px solid #dff5cf";
+          card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 6px;">
+                    <span>${cat}</span>
+                    <span style="font-size: 12px; color: var(--rc-muted);">${d.count} txns</span>
+                </div>
+                <div style="font-size: 20px; font-weight: 800; font-family: monospace;">${formatCurrency(d.amt)}</div>
+                <div style="font-size: 12px; color: var(--rc-muted); margin-top: 4px;">⏳ ~${formatHours(calcHours(d.amt))} work</div>
+                <div style="font-size: 12px; color: var(--rc-invest); margin-top: 2px;">📈 If invested: ${formatCurrency(calcFuture(d.amt))}</div>
+            `;
+          grid.appendChild(card);
+        });
+      }
+
+      // Handlers
+      document.getElementById("add-transaction-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const desc = document.getElementById("tx-description").value.trim();
+        const amt = parseFloat(document.getElementById("tx-amount").value);
+        const cat = document.getElementById("tx-category").value;
+        const recurring = document.getElementById("tx-recurring").checked;
+
+        if (desc && amt > 0) {
+          const newTx = {
+            id: String(Date.now()),
+            description: desc,
+            amount: amt,
+            category: cat,
+            isRecurring: recurring,
+          };
+
+          transactions.unshift(newTx);
+          document.getElementById("add-transaction-form").reset();
+          renderAll();
+
+          // If Supabase authenticated, save to cloud
+          if (supabaseClient && currentUser) {
+            try {
+              await supabaseClient.from("transactions").insert({
+                user_id: currentUser.id,
+                name: desc,
+                amount: amt,
+                recurring: recurring,
+              });
+            } catch (err) {
+              console.error("Supabase insert error:", err);
+            }
+          }
+        }
+      });
+
+      document.getElementById("spending-slider").addEventListener("input", renderWhatIf);
+
+      function setSliderCut(val) {
+        document.getElementById("spending-slider").value = val;
+        renderWhatIf();
+      }
+
+      async function deleteTransaction(id) {
+        transactions = transactions.filter((t) => t.id !== id);
+        renderAll();
+
+        if (supabaseClient && currentUser) {
+          try {
+            await supabaseClient.from("transactions").delete().eq("id", id);
+          } catch (e) {}
+        }
+      }
+
+      function resetDemoData() {
+        transactions = [
+          {
+            id: "1",
+            description: "Coffee shop",
+            amount: 150,
+            category: "Food",
+            isRecurring: false,
+          },
+          {
+            id: "2",
+            description: "Lunch at restaurant",
+            amount: 350,
+            category: "Food",
+            isRecurring: false,
+          },
+          {
+            id: "3",
+            description: "Netflix subscription",
+            amount: 199,
+            category: "Subscriptions",
+            isRecurring: true,
+          },
+          {
+            id: "4",
+            description: "Spotify premium",
+            amount: 150,
+            category: "Subscriptions",
+            isRecurring: true,
+          },
+          {
+            id: "5",
+            description: "Uber ride",
+            amount: 200,
+            category: "Transport",
+            isRecurring: false,
+          },
+          {
+            id: "6",
+            description: "Amazon shopping",
+            amount: 800,
+            category: "Shopping",
+            isRecurring: false,
+          },
+          {
+            id: "7",
+            description: "Monthly gym membership",
+            amount: 800,
+            category: "Health",
+            isRecurring: true,
+          },
+          {
+            id: "8",
+            description: "Food delivery",
+            amount: 400,
+            category: "Food",
+            isRecurring: false,
+          },
+          {
+            id: "9",
+            description: "Movie tickets",
+            amount: 450,
+            category: "Entertainment",
+            isRecurring: false,
+          },
+          {
+            id: "10",
+            description: "Gas for car",
+            amount: 1200,
+            category: "Transport",
+            isRecurring: false,
+          },
+        ];
+        renderAll();
+      }
+
+      function openSettingsModal() {
+        document.getElementById("setting-wage").value = hourlyRate;
+        document.getElementById("setting-return").value = expectedReturn;
+        document.getElementById("setting-horizon").value = projectionYears;
+        document.getElementById("settings-modal").style.display = "flex";
+      }
+
+      function closeSettingsModal() {
+        document.getElementById("settings-modal").style.display = "none";
+      }
+
+      async function saveSettings() {
+        hourlyRate = parseFloat(document.getElementById("setting-wage").value) || 500;
+        expectedReturn = parseFloat(document.getElementById("setting-return").value) || 7;
+        projectionYears = parseInt(document.getElementById("setting-horizon").value) || 20;
+        closeSettingsModal();
+        renderAll();
+
+        if (supabaseClient && currentUser) {
+          try {
+            await supabaseClient.from("profiles").upsert({
+              id: currentUser.id,
+              hourly_rate: hourlyRate,
+              expected_return: expectedReturn / 100,
+              projection_years: projectionYears,
+            });
+          } catch (e) {
+            console.error("Supabase profile update error:", e);
+          }
+        }
+      }
+
+      // Auto-categorize
+      document.getElementById("tx-description").addEventListener("input", (e) => {
+        const val = e.target.value.toLowerCase();
+        const map = {
+          coffee: "Food",
+          lunch: "Food",
+          dinner: "Food",
+          pizza: "Food",
+          netflix: "Subscriptions",
+          spotify: "Subscriptions",
+          gym: "Health",
+          uber: "Transport",
+          amazon: "Shopping",
+          movie: "Entertainment",
+        };
+        for (const [k, v] of Object.entries(map)) {
+          if (val.includes(k)) {
+            document.getElementById("tx-category").value = v;
+            break;
+          }
+        }
+      });
+
+      // Supabase Auth Modal & Handlers
+      function openAuthModal() {
+        const errorEl = document.getElementById("auth-error-msg");
+        errorEl.style.display = "none";
+
+        if (currentUser) {
+          document.getElementById("auth-logged-in-view").style.display = "block";
+          document.getElementById("auth-logged-out-view").style.display = "none";
+          document.getElementById("auth-user-email").innerText = currentUser.email;
+        } else {
+          document.getElementById("auth-logged-in-view").style.display = "none";
+          document.getElementById("auth-logged-out-view").style.display = "block";
+        }
+        document.getElementById("auth-modal").style.display = "flex";
+      }
+
+      function closeAuthModal() {
+        document.getElementById("auth-modal").style.display = "none";
+      }
+
+      function setAuthMode(mode) {
+        authMode = mode;
+        const loginBtn = document.getElementById("tab-login-btn");
+        const signupBtn = document.getElementById("tab-signup-btn");
+        const submitBtn = document.getElementById("auth-submit-btn");
+
+        if (mode === "login") {
+          loginBtn.style.background = "#e6f9d5";
+          signupBtn.style.background = "#ffffff";
+          submitBtn.innerText = "Sign In";
+        } else {
+          signupBtn.style.background = "#e6f9d5";
+          loginBtn.style.background = "#ffffff";
+          submitBtn.innerText = "Create Account";
+        }
+      }
+
+      async function handleAuthSubmit(e) {
+        e.preventDefault();
+        const email = document.getElementById("auth-email").value.trim();
+        const password = document.getElementById("auth-password").value;
+        const errorEl = document.getElementById("auth-error-msg");
+        errorEl.style.display = "none";
+
+        if (!supabaseClient) {
+          errorEl.innerText = "Supabase client not initialized";
+          errorEl.style.display = "block";
+          return;
+        }
+
+        try {
+          if (authMode === "signup") {
+            const { data, error } = await supabaseClient.auth.signUp({ email, password });
+            if (error) throw error;
+            currentUser = data.user;
+            updateAuthStatusUI();
+            closeAuthModal();
+            alert("Account created successfully! Cloud sync is active.");
+            syncWithSupabase();
+          } else {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+              email,
+              password,
+            });
+            if (error) throw error;
+            currentUser = data.user;
+            updateAuthStatusUI();
+            closeAuthModal();
+            syncWithSupabase();
+          }
+        } catch (err) {
+          errorEl.innerText = err.message || "Authentication failed.";
+          errorEl.style.display = "block";
+        }
+      }
+
+      async function handleSignOut() {
+        if (supabaseClient) {
+          await supabaseClient.auth.signOut();
+        }
+        currentUser = null;
+        updateAuthStatusUI();
+        closeAuthModal();
+      }
+
+      function updateAuthStatusUI() {
+        const dot = document.getElementById("auth-status-dot");
+        const text = document.getElementById("auth-status-text");
+
+        if (currentUser) {
+          dot.style.background = "#2f6fed";
+          text.innerText = currentUser.email.split("@")[0];
+        } else {
+          dot.style.background = "#a2e84d";
+          text.innerText = "Guest Mode";
+        }
+      }
+
+      async function syncWithSupabase() {
+        if (!supabaseClient || !currentUser) return;
+
+        try {
+          // Fetch profile
+          const { data: profile } = await supabaseClient
+            .from("profiles")
+            .select("*")
+            .eq("id", currentUser.id)
+            .maybeSingle();
+
+          if (profile) {
+            if (profile.hourly_rate) hourlyRate = Number(profile.hourly_rate);
+            if (profile.expected_return) expectedReturn = Number(profile.expected_return) * 100;
+            if (profile.projection_years) projectionYears = Number(profile.projection_years);
+          }
+
+          // Fetch transactions
+          const { data: txData } = await supabaseClient
+            .from("transactions")
+            .select("*")
+            .eq("user_id", currentUser.id)
+            .order("occurred_at", { ascending: false });
+
+          if (txData && txData.length > 0) {
+            transactions = txData.map((t) => ({
+              id: t.id,
+              description: t.name,
+              amount: Number(t.amount),
+              category: "Shopping",
+              isRecurring: t.recurring || false,
+            }));
+          }
+
+          renderAll();
+        } catch (e) {
+          console.error("Supabase sync error:", e);
+        }
+      }
+
+      // Check existing session on startup
+      if (supabaseClient) {
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+          if (session?.user) {
+            currentUser = session.user;
+            updateAuthStatusUI();
+            syncWithSupabase();
+          }
+        });
+      }
+
+      // Start
+      renderAll();
+    </script>
   </body>
 </html>
