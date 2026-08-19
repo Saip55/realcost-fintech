@@ -1,0 +1,1390 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RealCost — See What Your Money Really Costs You</title>
+    <meta
+      name="description"
+      content="RealCost shows the hidden hours and future value behind every purchase"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      :root {
+        --rc-bg-glow: #e6f9d5;
+        --rc-bg-outer: #d4f5b2;
+        --rc-lime: #b8f566;
+        --rc-lime-dark: #a2e84d;
+        --rc-accent: #83db28;
+        --rc-ink: #121910;
+        --rc-muted: #5e6d56;
+        --rc-glass: rgba(255, 255, 255, 0.75);
+        --rc-border: rgba(255, 255, 255, 0.85);
+        --rc-danger: #e8503f;
+        --rc-invest: #2f6fed;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: #f7fdf3;
+        color: var(--rc-ink);
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* Ambient Glows */
+      .ambient-glow-top {
+        position: absolute;
+        width: 700px;
+        height: 700px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(184, 245, 102, 0.45) 0%,
+          rgba(255, 255, 255, 0) 70%
+        );
+        top: -250px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 0;
+        pointer-events: none;
+        filter: blur(40px);
+      }
+
+      .ambient-glow-bottom {
+        position: absolute;
+        width: 800px;
+        height: 600px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(162, 232, 77, 0.35) 0%,
+          rgba(255, 255, 255, 0) 70%
+        );
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 0;
+        pointer-events: none;
+        filter: blur(60px);
+      }
+
+      .canvas-frame {
+        width: 100%;
+        max-width: 1320px;
+        position: relative;
+        z-index: 1;
+        padding-bottom: 60px;
+      }
+
+      /* Header & Nav */
+      header {
+        position: sticky;
+        top: 24px;
+        z-index: 100;
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-top: 20px;
+      }
+
+      .nav-pill {
+        background: var(--rc-glass);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--rc-border);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        padding: 8px 10px 8px 24px;
+        margin: 0 20px;
+      }
+
+      .brand-logo {
+        font-weight: 800;
+        font-size: 17px;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--rc-ink);
+        text-decoration: none;
+      }
+
+      .brand-logo svg {
+        width: 18px;
+        height: 18px;
+        fill: var(--rc-ink);
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        gap: 22px;
+      }
+
+      .nav-links a {
+        text-decoration: none;
+        color: var(--rc-muted);
+        font-size: 14px;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+
+      .nav-links a:hover {
+        color: var(--rc-ink);
+      }
+
+      a:focus-visible,
+      button:focus-visible,
+      input:focus-visible {
+        outline: 2px solid var(--rc-ink);
+        outline-offset: 3px;
+        border-radius: 4px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+
+      /* Buttons */
+      .btn-card {
+        background: var(--rc-lime);
+        color: var(--rc-ink);
+        font-weight: 600;
+        font-size: 13.5px;
+        border-radius: 9999px;
+        padding: 9px 18px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 14px rgba(171, 243, 77, 0.4);
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+        cursor: pointer;
+      }
+
+      .btn-card:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 6px 20px rgba(171, 243, 77, 0.6);
+      }
+
+      .btn-danger {
+        background: var(--rc-danger);
+        color: white;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        text-decoration: none;
+      }
+
+      .btn-invest {
+        background: var(--rc-invest);
+        color: white;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        text-decoration: none;
+      }
+
+      /* Input */
+      .input-glass {
+        background: var(--rc-glass);
+        border: 1px solid var(--rc-border);
+        border-radius: 9999px;
+        padding: 8px 16px 8px 8px;
+        color: var(--rc-ink);
+        font-size: 14px;
+        width: 100%;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      .input-glass:focus {
+        border-color: var(--rc-lime);
+      }
+
+      /* Badge Pill */
+      .badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #dff5cf;
+        padding: 6px 16px;
+        border-radius: 9999px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--rc-muted);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        margin-bottom: 24px;
+      }
+
+      .badge-pill svg {
+        width: 14px;
+        height: 14px;
+        fill: var(--rc-accent);
+        flex-shrink: 0;
+      }
+
+      .cost-delta-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(232, 80, 63, 0.12);
+        border: 1px solid var(--rc-danger);
+        padding: 2px 8px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--rc-danger);
+        font-family: monospace;
+        margin-left: 8px;
+        vertical-align: middle;
+      }
+
+      /* Hero Section */
+      .hero {
+        position: relative;
+        z-index: 10;
+        text-align: center;
+        padding: 60px 20px 40px;
+        max-width: 920px;
+        margin: 0 auto;
+      }
+
+      .hero-title {
+        font-size: 56px;
+        line-height: 1.12;
+        font-weight: 700;
+        letter-spacing: -1.5px;
+        color: var(--rc-ink);
+        margin-bottom: 18px;
+      }
+
+      .hero-subtitle {
+        font-size: 16px;
+        color: var(--rc-muted);
+        line-height: 1.5;
+        max-width: 580px;
+        margin: 0 auto 28px;
+      }
+
+      /* Fintech Card */
+      .fintech-card {
+        width: 520px;
+        height: 320px;
+        background: linear-gradient(135deg, #aef75a 0%, #8ae032 60%, #76cd22 100%);
+        border-radius: 28px;
+        box-shadow:
+          0 40px 80px rgba(89, 179, 21, 0.28),
+          inset 0 1px 2px rgba(255, 255, 255, 0.6);
+        padding: 34px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        z-index: 5;
+        transform-style: preserve-3d;
+        animation: cardFloat 6s ease-in-out infinite alternate;
+        cursor: pointer;
+        margin: 20px auto;
+      }
+
+      @keyframes cardFloat {
+        0% {
+          transform: translateY(0px) rotateX(4deg) rotateY(-6deg) rotateZ(1deg);
+        }
+        100% {
+          transform: translateY(-16px) rotateX(-3deg) rotateY(6deg) rotateZ(-1.5deg);
+        }
+      }
+
+      .card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .card-brand {
+        font-size: 26px;
+        font-weight: 800;
+        color: var(--rc-ink);
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .card-chip {
+        width: 52px;
+        height: 42px;
+        background: rgba(255, 255, 255, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 8px;
+        backdrop-filter: blur(4px);
+      }
+
+      .card-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+      }
+
+      .card-amount {
+        font-family: monospace;
+        font-size: 24px;
+        color: var(--rc-ink);
+        letter-spacing: 2px;
+      }
+
+      .card-stats {
+        display: flex;
+        gap: 24px;
+      }
+
+      .card-stat {
+        text-align: right;
+      }
+
+      .card-stat-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--rc-muted);
+        margin-bottom: 4px;
+      }
+
+      .card-stat-value {
+        font-family: monospace;
+        font-size: 18px;
+        color: var(--rc-ink);
+      }
+
+      /* Features Grid */
+      .features-section {
+        padding: 90px 40px 60px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 30px;
+        max-width: 1160px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 10;
+      }
+
+      .feature-item {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .feature-icon-box {
+        width: 72px;
+        height: 72px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s;
+      }
+
+      .feature-item:hover .feature-icon-box {
+        transform: scale(1.12) rotate(4deg);
+      }
+
+      .feature-title {
+        font-size: 19px;
+        font-weight: 700;
+        color: var(--rc-ink);
+        margin-bottom: 8px;
+      }
+
+      .feature-desc {
+        font-size: 13.5px;
+        color: var(--rc-muted);
+        line-height: 1.45;
+        max-width: 210px;
+      }
+
+      /* Cashback / Shock Section */
+      .cashback-section {
+        padding: 80px 20px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        z-index: 10;
+      }
+
+      .cashback-headline {
+        font-size: 58px;
+        font-weight: 800;
+        line-height: 1.1;
+        letter-spacing: -1.5px;
+        margin: 16px 0 14px;
+      }
+
+      .cashback-headline span {
+        color: var(--rc-ink);
+      }
+
+      .shock-subtext {
+        font-size: 16px;
+        color: var(--rc-muted);
+        margin-bottom: 24px;
+      }
+
+      .floating-ornaments {
+        position: relative;
+        max-width: 960px;
+        margin: 40px auto 0;
+      }
+
+      .ornament {
+        position: absolute;
+        font-size: 32px;
+        color: var(--rc-accent);
+        animation: ornamentBob 5s ease-in-out infinite alternate;
+        filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
+      }
+
+      @keyframes ornamentBob {
+        0% {
+          transform: translateY(0px) rotate(0deg);
+        }
+        100% {
+          transform: translateY(-20px) rotate(5deg);
+        }
+      }
+
+      /* What-If Simulator */
+      .spiral-section {
+        padding: 80px 60px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        gap: 40px;
+        max-width: 1120px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 10;
+      }
+
+      .spiral-visual {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .visual-dial {
+        width: 280px;
+        height: 280px;
+        background: conic-gradient(
+          from 0deg,
+          var(--rc-lime),
+          var(--rc-lime-dark),
+          var(--rc-accent),
+          var(--rc-lime)
+        );
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+      }
+
+      .visual-dial .number {
+        font-size: 40px;
+        font-weight: 700;
+        color: var(--rc-ink);
+        font-family: monospace;
+      }
+
+      .visual-dial .unit {
+        font-size: 18px;
+        color: var(--rc-muted);
+        margin-left: 4px;
+      }
+
+      @keyframes spinSlow {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .spin-animation {
+        animation: spinSlow 20s linear infinite;
+      }
+
+      .spiral-text {
+        text-align: left;
+      }
+
+      .spiral-text h2 {
+        font-size: 46px;
+        font-weight: 800;
+        line-height: 1.15;
+        margin: 16px 0;
+        letter-spacing: -1px;
+        color: var(--rc-ink);
+      }
+
+      .spiral-subtitle {
+        font-size: 16px;
+        color: var(--rc-muted);
+        margin-bottom: 24px;
+      }
+
+      .slider-container {
+        width: 100%;
+      }
+
+      .slider {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 8px;
+        border-radius: 4px;
+        background: var(--rc-border);
+        outline: none;
+        margin: 16px 0;
+      }
+
+      .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--rc-lime);
+        cursor: pointer;
+        transition: transform 0.15s;
+      }
+
+      .slider::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+      }
+
+      .slider-value {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--rc-muted);
+        margin-top: 8px;
+      }
+
+      /* Insights Panel */
+      .insights-panel {
+        padding: 90px 40px 60px;
+        max-width: 1160px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 10;
+      }
+
+      .insights-section {
+        margin-bottom: 40px;
+      }
+
+      .insights-section h2 {
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: -1px;
+        margin-bottom: 24px;
+        color: var(--rc-ink);
+      }
+
+      .category-grid {
+        display: grid;
+        gap: 20px;
+      }
+
+      .category-tablet {
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+      }
+
+      .category-mobile {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      @media (max-width: 980px) {
+        .category-grid {
+          grid-template-columns: 1fr;
+        }
+        .category-tablet {
+          grid-template-columns: 1fr;
+        }
+        .category-mobile {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        body {
+          padding: 12px 8px;
+        }
+        .canvas-frame {
+          border-radius: 24px;
+        }
+        header {
+          padding: 0 10px;
+        }
+        .nav-pill {
+          gap: 12px;
+          padding: 8px 8px 8px 16px;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+        .nav-links {
+          display: none;
+        }
+        .hero {
+          padding: 40px 16px 24px;
+        }
+        .hero-title {
+          font-size: 30px;
+        }
+        .hero-subtitle {
+          font-size: 14.5px;
+        }
+        .fintech-card {
+          width: 92vw;
+          max-width: 460px;
+          height: 280px;
+          padding: 26px;
+          border-radius: 20px;
+        }
+        .card-brand {
+          font-size: 20px;
+        }
+        .features-section {
+          grid-template-columns: 1fr;
+          gap: 36px;
+          padding: 70px 24px 40px;
+        }
+        .cashback-headline {
+          font-size: 42px;
+        }
+        .spiral-section {
+          grid-template-columns: 1fr;
+          text-align: center;
+          padding: 60px 24px;
+        }
+        .spiral-text h2 {
+          font-size: 28px;
+        }
+        .visual-dial {
+          width: 200px;
+          height: 200px;
+        }
+        .visual-dial .number {
+          font-size: 30px;
+        }
+        .footer-cta {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 16px;
+          margin: 40px 20px;
+        }
+      }
+
+      /* Transaction Row */
+      .transaction-row {
+        background: var(--rc-glass);
+        border: 1px solid var(--rc-border);
+        border-radius: 16px;
+        padding: 20px;
+        margin: 12px 0;
+        backdrop-filter: blur(8px);
+      }
+
+      .transaction-row:hover {
+        border-color: var(--rc-lime);
+      }
+
+      .transaction-description {
+        font-size: 15px;
+        color: var(--rc-ink);
+      }
+
+      .transaction-category {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--rc-muted);
+      }
+
+      .transaction-amount {
+        font-family: monospace;
+        font-size: 18px;
+        color: var(--rc-ink);
+      }
+
+      /* Add Transaction Form */
+      .add-transaction-form {
+        max-width: 500px;
+        margin: 0 auto;
+      }
+
+      .form-row {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      @media (max-width: 640px) {
+        .form-row {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Loader / State */
+      .loading {
+        opacity: 0.6;
+        pointer-events: none;
+      }
+    </style>
+
+    <script>
+      // Respect prefers-reduced-motion
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          document.body.classList.add("reduced-motion");
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <div class="canvas-frame">
+      <div class="ambient-glow-top"></div>
+      <div class="ambient-glow-bottom"></div>
+
+      <!-- Sticky Navigation -->
+      <header>
+        <nav class="nav-pill">
+          <a href="#" class="brand-logo">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+            RealCost
+          </a>
+          <ul class="nav-links">
+            <li><a href="#dashboard">Dashboard</a></li>
+            <li><a href="#insights">Insights</a></li>
+            <li><a href="#what-if">What-If</a></li>
+          </ul>
+        </nav>
+      </header>
+
+      <!-- Hero / Onboarding Section -->
+      <section class="hero" id="onboarding">
+        <div class="badge-pill">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
+            ></path>
+          </svg>
+          Get started in 10 seconds
+        </div>
+        <h1 class="hero-title">Discover Your Real Cost</h1>
+        <p class="hero-subtitle">
+          Every purchase has a hidden cost in hours of work and future value lost. Connect your
+          spending habits and see the true impact.
+        </p>
+        <a href="#dashboard" class="btn-card">Load Demo Data</a>
+
+        <!-- Fintech Card Demo -->
+        <div class="fintech-card">
+          <div class="card-top">
+            <div class="card-brand">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#121c0b">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+              </svg>
+              RealCost
+            </div>
+            <div class="card-chip"></div>
+          </div>
+          <div class="card-bottom">
+            <div>
+              <div class="card-stat">
+                <div class="card-stat-label">₹/hr</div>
+                <div class="card-stat-value" id="demo-hourly">500</div>
+              </div>
+              <div class="card-stat">
+                <div class="card-stat-label">20y future</div>
+                <div class="card-stat-value" id="demo-future">1933</div>
+              </div>
+            </div>
+            <div class="card-stats">
+              <div class="card-stat">
+                <div class="card-stat-label">7% return</div>
+                <div class="card-stat-value" id="demo-rate">7</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dashboard -->
+      <section class="hero" id="dashboard" style="padding: 80px 20px 40px">
+        <h2
+          style="
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 24px;
+            color: var(--rc-ink);
+          "
+        >
+          Dashboard
+        </h2>
+
+        <!-- Add Transaction Form -->
+        <div class="add-transaction-form" style="margin-bottom: 40px">
+          <h3 style="font-size: 18px; font-weight: 600; color: var(--rc-ink); margin-bottom: 16px">
+            Add Transaction
+          </h3>
+          <form
+            id="add-transaction-form"
+            class="form-row"
+            style="gap: 12px; grid-template-columns: 1fr 1fr"
+          >
+            <div>
+              <label
+                style="display: block; font-size: 13px; color: var(--rc-muted); margin-bottom: 4px"
+                >Description</label
+              >
+              <input
+                type="text"
+                id="tx-description"
+                class="input-glass"
+                placeholder="e.g. Coffee"
+                required
+              />
+            </div>
+            <div>
+              <label
+                style="display: block; font-size: 13px; color: var(--rc-muted); margin-bottom: 4px"
+                >Amount (₹)</label
+              >
+              <input
+                type="number"
+                id="tx-amount"
+                class="input-glass"
+                placeholder="e.g. 500"
+                required
+              />
+            </div>
+            <div>
+              <label
+                style="display: block; font-size: 13px; color: var(--rc-muted); margin-bottom: 4px"
+                >Category</label
+              >
+              <select id="tx-category" class="input-glass">
+                <option value="Food">Food</option>
+                <option value="Subscriptions">Subscriptions</option>
+                <option value="Transport">Transport</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Health">Health</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label
+                style="display: block; font-size: 13px; color: var(--rc-muted); margin-bottom: 4px"
+                >Recurring?</label
+              >
+              <label
+                style="display: inline-block; padding: 4px 8px; background: var(--rc-glass); border-radius: 4px; font-size: 12px; cursor pointer;"
+              >
+                <input type="checkbox" id="tx-recurring" style="margin-right: 4px" /> Yes
+              </label>
+            </div>
+            <button type="submit" class="btn-card w-full" style="justify-self: end">Add</button>
+          </form>
+        </div>
+
+        <!-- Transaction List -->
+        <div
+          id="transaction-list"
+          style="display: grid; gap: 16px; max-width: 1200px; width: 100%"
+        ></div>
+
+        <!-- Shock Card -->
+        <div
+          id="shock-card"
+          style="
+            background: var(--rc-glass);
+            border: 1px solid var(--rc-border);
+            border-radius: 28px;
+            padding: 32px;
+            margin: 32px 0;
+            backdrop-filter: blur(8px);
+            display: none;
+          "
+        >
+          <div style="font-size: 32px; color: var(--rc-danger); margin-bottom: 16px">
+            💥 Subscription Shock
+          </div>
+          <div
+            id="shock-value"
+            class="cashback-headline"
+            style="
+              font-size: 42px;
+              font-weight: 800;
+              line-height: 1.1;
+              letter-spacing: -1.5px;
+              margin: 8px 0;
+            "
+          >
+            ₹0
+            <span> in 20 years</span>
+          </div>
+          <div class="shock-subtext" style="font-size: 14px; color: var(--rc-muted)">
+            If you keep paying these recurring subscriptions
+          </div>
+          <div class="floating-ornaments" id="ornaments"></div>
+        </div>
+      </section>
+
+      <!-- What-If Simulator -->
+      <section class="spiral-section" id="what-if" style="display: none">
+        <div class="spiral-visual">
+          <div class="visual-dial" id="dial">
+            <div class="number" id="dial-number">0</div>
+            <div class="unit">₹ crore</div>
+          </div>
+        </div>
+        <div class="spiral-text">
+          <h2>Cut Your Spending, Grow Your Wealth</h2>
+          <p class="spiral-subtitle" id="slider-subtitle">
+            If you cut ₹500 per month, you could have ₹2.6L in 20 years at 7% return
+          </p>
+
+          <input type="range" min="0" max="2000" value="500" class="slider" id="spending-slider" />
+          <div class="slider-value">
+            <span>₹<span id="slider-value">500</span>/month</span>
+            <span>₹<span id="future-value">2.6L</span>/20y</span>
+          </div>
+
+          <button class="btn-card" style="margin-top: 24px">Reset Spending</button>
+        </div>
+      </section>
+
+      <!-- Insights Panel -->
+      <section class="insights-panel" id="insights" style="display: none">
+        <h2>Spending Insights</h2>
+
+        <div class="insights-section" style="margin-bottom: 40px">
+          <h3 style="font-size: 20px; font-weight: 600; color: var(--rc-ink); margin-bottom: 16px">
+            By Category
+          </h3>
+          <div
+            class="category-grid"
+            id="category-grid"
+            style="
+              display: grid;
+              gap: 20px;
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            "
+          >
+            <!-- Dynamic content -->
+          </div>
+        </div>
+
+        <div class="insights-section">
+          <h3 style="font-size: 20px; font-weight: 600; color: var(--rc-ink); margin-bottom: 16px">
+            Hours Worked Equivalent
+          </h3>
+          <div
+            style="
+              display: grid;
+              gap: 16px;
+              grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            "
+          >
+            <!-- Dynamic content -->
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+          // Core data and calculations
+          const CALCULATIONS = {
+              hoursOfWork: (amount, hourlyRate) => {
+                  return Math.round((amount / hourlyRate) * 100) / 100;
+              },
+              futureValue: (amount, annualReturnRate, years) => {
+                  return Math.round(
+                      amount * Math.pow(1 + annualReturnRate / 100, years) * 100
+                  ) / 100;
+              },
+              lifetimeCost: (monthlyAmount, months, monthlyRate) => {
+                  if (monthlyRate === 0) return Math.round(monthlyAmount * months * 100) / 100;
+                  return Math.round(
+                      (monthlyAmount * ((Math.pow(1 + monthlyRate / 100, months) - 1) / (monthlyRate / 100))) * 100
+                  ) / 100;
+              }
+          };
+
+          // Format helpers
+          const formatHours = (hours) => {
+              if (hours < 1) return `${Math.round(hours * 60)} min`;
+              return `${hours.toFixed(1)} hrs`;
+          };
+
+          const formatCurrency = (amount) => {
+              return `₹${amount.toLocaleString()}`;
+          };
+
+          const formatFutureValue = (amount, years) => {
+              const fv = CALCULATIONS.futureValue(amount, 7, years);
+              if (fv >= 100000) {
+                  return `${(fv / 100000).toFixed(1)}L`;
+              }
+              return formatCurrency(amount);
+          };
+
+          // Auto-categorize
+          const autoCategorize = (description) => {
+              const lower = description.toLowerCase();
+              const categories = {
+                  coffee: "Food", lunch: "Food", dinner: "Food", breakfast: "Food",
+                  food: "Food", restaurant: "Food",
+                  netflix: "Subscriptions", spotify: "Subscriptions", streaming: "Subscriptions", subs: "Subscriptions",
+                  gym: "Health", health: "Health",
+                  shopping: "Shopping", amazon: "Shopping",
+                  gas: "Transport", transport: "Transport", uber: "Transport", metro: "Transport",
+                  entertainment: "Entertainment", movie: "Entertainment", shopping_mall: "Entertainment"
+              };
+              for (const [key, value] of Object.entries(categories)) {
+                  if (lower.includes(key)) return value;
+              }
+              return "Other";
+          };
+
+          // State
+          let transactions = [];
+          let hourlyRate = 500;
+          let projectionYears = 20;
+          let annualReturnRate = 7;
+
+          // DOM Elements
+          const transactionList = document.getElementById('transaction-list');
+          const addTxForm = document.getElementById('add-transaction-form');
+          const shockCard = document.getElementById('shock-card');
+          const shockValue = document.getElementById('shock-value');
+          const ornamentsContainer = document.getElementById('ornaments');
+          const spendingSlider = document.getElementById('spending-slider');
+          const dialNumber = document.getElementById('dial-number');
+          const sliderValue = document.getElementById('slider-value');
+          const futureValueDisplay = document.getElementById('future-value');
+          const sliderSubtitle = document.getElementById('slider-subtitle');
+
+          // Initialize with seed data
+          const seedData = [
+              { id: '1', description: 'Coffee shop', amount: 150, category: 'Food', isRecurring: false },
+              { id: '2', description: 'Lunch at restaurant', amount: 350, category: 'Food', isRecurring: false },
+              { id: '3', description: 'Netflix subscription', amount: 199, category: 'Subscriptions', isRecurring: true, recurringIntervalMonths: 1 },
+              { id: '4', description: 'Spotify premium', amount: 150, category: 'Subscriptions', isRecurring: true, recurringIntervalMonths: 1 },
+              { id: '5', description: 'Uber ride', amount: 200, category: 'Transport', isRecurring: false },
+              { id: '6', description: 'Amazon shopping', amount: 800, category: 'Shopping', isRecurring: false },
+              { id: '7', description: 'Monthly gym membership', amount: 800, category: 'Health', isRecurring: true, recurringIntervalMonths: 1 },
+              { id: '8', description: 'Food delivery', amount: 400, category: 'Food', isRecurring: false },
+              { id: '9', description: 'Movie tickets', amount: 450, category: 'Entertainment', isRecurring: false },
+              { id: '10', description: 'Gas for car', amount: 1200, category: 'Transport', isRecurring: false },
+              { id: '11', description: 'Ice cream', amount: 150, category: 'Food', isRecurring: false },
+              { id: '12', description: 'Book purchase', amount: 600, category: 'Shopping', isRecurring: false }
+          ];
+
+          // Render a single transaction row
+          const renderTransactionRow = (tx) => {
+              const hours = CALCULATIONS.hoursOfWork(tx.amount, hourlyRate);
+              const futureVal = CALCULATIONS.futureValue(tx.amount, annualReturnRate, projectionYears);
+              const category = tx.category || autoCategorize(tx.description);
+              const isRecurring = tx.isRecurring || false;
+
+              const row = document.createElement('div');
+              row.className = 'transaction-row';
+              row.innerHTML = `
+                  <div style="flex: 1;">
+                      <p class="transaction-description" title="${tx.description}">${tx.description}</p>
+                      <p class="transaction-category">${category}</p>
+                  </div>
+                  <div style="flex: 0 0 100px; text-align: right;">
+                      <p class="transaction-amount">${formatCurrency(tx.amount)}</p>
+                  </div>
+                  <div style="flex: 0 0 120px; text-align: right;">
+                      <p title="${formatHours(hours)}" style="font-family: monospace; font-size: 12px; color: var(--rc-muted);">${formatHours(hours)}</p>
+                  </div>
+                  <div style="flex: 0 0 140px; text-align: right;">
+                      <p title="${formatCurrency(futureVal)}" style="font-family: monospace; font-size: 12px; color: var(--rc-accent);">${formatCurrency(futureVal)}</p>
+                  </div>
+                  ${isRecurring ? `<span class="cost-delta-badge" title="Recurring transaction">🔁</span>` : ''}
+              `;
+
+              // Add click handler to show details
+              row.addEventListener('click', () => showTransactionDetails(tx, hours, futureVal));
+
+              return row;
+          };
+
+          // Show transaction details
+          const showTransactionDetails = (tx, hours, futureVal) => {
+              alert(`📋 ${tx.description}\n💰 Amount: ${formatCurrency(tx.amount)}\n⏱️ Hours of work: ${formatHours(hours)}\n📈 If invested (${projectionYears}y): ${formatCurrency(futureVal)}`);
+          };
+
+          // Render Shock Card
+          const renderShockCard = () => {
+              const recurring = transactions.filter(t => t.isRecurring);
+              if (recurring.length === 0) {
+                  shockCard.style.display = 'none';
+                  return;
+              }
+
+              const totalMonthly = recurring.reduce((sum, t) => sum + t.amount, 0);
+              const lifetime = CALCULATIONS.lifetimeCost(totalMonthly, projectionYears * 12, annualReturnRate / projectionYears);
+
+              shockCard.style.display = 'block';
+              shockValue.innerHTML = `${formatCurrency(lifetime)}<span> in 20 years</span>`;
+
+              // Generate floating ornaments
+              ornamentsContainer.innerHTML = '';
+              const ornamentCount = 6;
+              for (let i = 0; i < ornamentCount; i++) {
+                  const ornament = document.createElement('div');
+                  ornament.className = 'ornament';
+                  ornament.textContent = i % 2 === 0 ? '💰' : '₹';
+                  ornament.style.left = `${20 + i * 18}%`;
+                  ornament.style.animationDelay = `${i * 0.8}s`;
+                  ornament.style.animationDuration `${3 - i * 0.4}s`;
+                  ornamentsContainer.appendChild(ornament);
+              }
+          };
+
+          // Render Category Insights
+          const renderCategoryInsights = () => {
+              const grid = document.getElementById('category-grid');
+              if (!grid) return;
+
+              const categories = {};
+              transactions.forEach(tx => {
+                  const cat = tx.category || autoCategorize(tx.description);
+                  if (!categories[cat]) categories[cat] = { amount: 0, count: 0 };
+                  categories[cat].amount += tx.amount;
+                  categories[cat].count++;
+              });
+
+              grid.innerHTML = Object.entries(categories).map(([cat, data]) => {
+                  const hours = CALCULATIONS.hoursOfWork(data.amount, hourlyRate);
+                  const futureVal = CALCULATIONS.futureValue(data.amount, annualReturnRate, projectionYears);
+                  return `
+                      <div style="
+                          background: var(--rc-glass);
+                          border: 1px solid var(--rc-border);
+                          border-radius: 16px;
+                          padding: 20px;
+                          backdrop-filter: blur(8px);
+                          transition: transform 0.2s;
+                      " onmouseover="this.style.transform='translateY(-4px)'">
+                          <div style="font-weight: 700; color: var(--rc-ink); margin-bottom: 8px;">${cat}</div>
+                          <div style="font-size: 14px; color: var(--rc-muted); margin-bottom: 4px;">₹${data.amount.toLocaleString()} (${data.count} txns)</div>
+                          <div style="font-family: monospace; font-size: 12px; color: var(--rc-accent);">~${formatHours(hours)} work</div>
+                          <div style="font-size: 11px; color: var(--rc-muted);">If invested: ${formatCurrency(futureVal)}</div>
+                      </div>
+                  `;
+              }).join('');
+
+              // Also show hours worked total
+              const totalHours = transactions.reduce((sum, t) => sum + CALCULATIONS.hoursOfWork(t.amount, hourlyRate), 0);
+              const hoursDiv = document.createElement('div');
+              hoursDiv.innerHTML = `<div style="font-size: 14px; font-weight: 600; color: var(--rc-ink);">Total hours worked: ${formatHours(totalHours)}</div>
+      <div style="font-size: 12px; color: var(--rc-muted);">If all invested (${projectionYears}y): ${formatCurrency(CALCULATIONS.futureValue(totalHours * hourlyRate, annualReturnRate, projectionYears))}</div>`;
+              // Insert before grid end - simplify, just show the grid
+          };
+
+          // Render What-If simulator
+          const renderWhatIf = () => {
+              const monthlyCut = parseInt(spendingSlider.value);
+              const futureVal = CALCULATIONS.futureValue(monthlyCut * 12, annualReturnRate, projectionYears);
+
+              dialNumber.textContent = monthlyCut;
+              sliderValue.textContent = monthlyCut;
+              futureValueDisplay.textContent = futureVal >= 100000 ? `${(futureVal / 100000).toFixed(1)}L` : formatCurrency(futureVal);
+
+              // Update subtitle
+              sliderSubtitle.textContent = `If you cut ₹${monthlyCut}/month, you could have ₹${futureVal >= 100000 ? (futureVal / 100000).toFixed(1) + 'L' : formatCurrency(futureVal)} in ${projectionYears} years at ${annualReturnRate}% return`;
+          };
+
+          // Floating ornaments animation
+          const initOrnaments = () => {
+              const ornaments = document.querySelectorAll('.ornament');
+              ornaments.forEach((o, i) => {
+                  o.style.animationDelay = `${i * 0.2}s`;
+                  o.style.animationDuration = `${2.5 - i * 0.3}s`;
+              });
+          };
+
+          // Event Listeners
+          // Add transaction form
+          addTxForm.addEventListener('submit', (e) => {
+              e.preventDefault();
+              const description = document.getElementById('tx-description').value;
+              const amount = parseInt(document.getElementById('tx-amount').value);
+              const category = document.getElementById('tx-category').value;
+              const isRecurring = document.getElementById('tx-recurring').checked;
+
+              const tx = {
+                  id: crypto.randomUUID(),
+                  description,
+                  amount,
+                  category,
+                  isRecurring
+              };
+
+              transactions.push(tx);
+              transactionList.appendChild(renderTransactionRow(tx));
+
+              // Reset form
+              addTxForm.reset();
+              renderShockCard();
+              renderCategoryInsights();
+          });
+
+          // Shock card visibility
+          renderShockCard();
+
+          // What-If slider
+          spendingSlider.addEventListener('input', renderWhatIf);
+
+          // Initial render
+          // Load demo data
+          const loadDemoData = () => {
+              // Clear existing
+              transactionList.innerHTML = '';
+              transactions = [];
+
+              // Add seed data
+              seedData.forEach(tx => {
+                  transactions.push(tx);
+                  transactionList.appendChild(renderTransactionRow(tx));
+              });
+
+              renderShockCard();
+              renderCategoryInsights();
+          };
+
+          // Tab navigation
+          const tabs = {
+              onboarding: document.getElementById('onboarding'),
+              dashboard: document.getElementById('dashboard'),
+              whatif: document.getElementById('what-if'),
+              insights: document.getElementById('insights')
+          };
+
+          // Show section, hide others
+          const showSection = (sectionName) => {
+              Object.values(tabs).forEach(t => {
+                  if (t.id === 'onboarding') {
+                      t.style.display = 'block';
+                  } else {
+                      t.style.display = 'none';
+                  }
+              });
+
+              // Update nav active states
+              document.querySelectorAll('.nav-links a').forEach(a => {
+                  a.style.color = var(--rc-muted);
+                  if (a.getAttribute('href') === `#${sectionName}`) {
+                      a.style.color = var(--rc-ink);
+                  }
+              });
+          };
+
+          // Initial state - hide non-onboarding sections
+          document.getElementById('what-if').style.display = 'none';
+          document.getElementById('insights').style.display = 'none';
+
+          // Load demo data on startup
+          window.addEventListener('load', () => {
+              // Set up nav link colors
+              document.querySelectorAll('.nav-links a').forEach(a => {
+                  a.addEventListener('click', (e) => {
+                      e.preventDefault();
+                      const target = a.getAttribute('href').substring(1);
+                      showSection(target);
+                  });
+              });
+
+              // Load demo data after a moment
+              setTimeout(loadDemoData, 500);
+          });
+
+          // Button: Load Demo Data
+          const loadBtn = document.querySelector('.btn-card[href="#dashboard"]');
+          if (loadBtn) {
+              loadBtn.addEventListener('click', (e) => {
+                  e.preventDefault();
+                  loadDemoData();
+                  // Show dashboard, hide onboarding
+                  document.getElementById('onboarding').style.display = 'none';
+                  document.getElementById('dashboard').style.display = 'block';
+                  document.querySelector('.nav-links a[href="#dashboard"]').style.color = var(--rc-ink);
+              });
+          }
+
+          // What-If CTA
+          const whatIfCta = document.querySelector('.spiral-section .btn-card');
+          if (whatIfCta) {
+              whatIfCta.addEventListener('click', () => {
+                  document.getElementById('dashboard').style.display = 'none';
+                  document.getElementById('what-if').style.display = 'block';
+                  document.querySelector('.nav-links a[href="#what-if"]').style.color = var(--rc-ink);
+                  renderWhatIf();
+              });
+          }
+
+          // Reset CTA on what-if
+          const resetCta = document.querySelector('.spiral-section .btn-card');
+          if (resetCta) {
+              resetCta.addEventListener('click', () => {
+                  spendingSlider.value = '500';
+                  renderWhatIf();
+              });
+          }
+
+          initOrnaments();
+    </script>
+  </body>
+</html>
